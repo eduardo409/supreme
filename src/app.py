@@ -7,10 +7,10 @@ from client import Client
 from credit import Credit
 import json
 
-cred = json.load(open('../credExample.json'))
+cred = json.load(open('../cred.json'))
 creditCard = Credit(cred)
 # Client(credit)
-eduardo = Client(creditCard,'jr@gmail.com', '1234567')
+eduardo = Client(creditCard,'jr@gmail.com', '1234567890')
 # Item (name, color, size, item_type)
 item = Item('Duffle Bag','Dark Orange', 'XLarge', 'bags')
 # page reload frequency

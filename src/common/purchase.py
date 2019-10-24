@@ -31,28 +31,22 @@ class Purchase:
         chromeOptions = webdriver.ChromeOptions()
         prefs = {"profile.managed_default_content_settings.images":2}
         chromeOptions.add_experimental_option("prefs",prefs)
-        self.driver = webdriver.Chrome('../../chromedriver')
+        self.driver = webdriver.Chrome('../chromedriver')
         # self.driver.get(url) 
 
     def start(self):
+        start = time.time()
         item = self.waitForItem().click()
         self.addToCart()
-        time.sleep(10)
+        self.checkout()
+        end = time.time()
+        print("time: ",end - start, "seconds")
         
     def checkout(self):
         driver = self.driver
-        # fullname = "{} {}".format(self.client.fName, self.client.lName)
-        # WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.ID, 'order_billing_name'))
-        # self.driver.execute_script("document.getElementById('order_billing_name')")
-        # driver.execute_script("document.getElementById('order_billing_name').setAttribute('value','"+fullname+"' )")
-        # driver.execute_script("document.getElementById('order_email').setAttribute('value', '"+ self.client.email +"')")
-        # driver.execute_script("document.getElementById('order_tel').setAttribute('value', '"+ self.client.phone+"')")
-        # driver.execute_script("document.getElementById('bo').setAttribute('value', '"+ self.credit.address+"')")
-        # driver.execute_script("document.getElementById('order_billing_zip').setAttribute('value', '"+ self.credit.zipCode+"')")
-        # driver.find_element_by_name("order[billing_state]").send_keys(self.credit.state)
-        # driver.execute_script("document.getElementById('order_billing_city').setAttribute('value', '"+self.credit.city+"')")
-        # driver.execute_script("document.getElementById('order_billing_country').setAttribute('value', '"+"usa"+"')")
-        # user payment information (credentials)
+        WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'order_billing_name')))
+        self.fillForm()
+
                               
     def addToCart(self):
         WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.NAME, 'commit'))).click()
@@ -89,4 +83,30 @@ class Purchase:
 
     def __del__(self):
         print('destroying object')
-        self.driver.close()
+        # self.driver.close()
+
+    def fillForm(self):
+        # client info
+        fullname = '"{} {}"'.format(self.client.fName, self.client.lName)
+        name = 'document.getElementById("order_billing_name").setAttribute("value",{} );'.format(fullname)
+        email = 'document.getElementById("order_email").setAttribute("value","{}");'.format(self.client.email)
+        phone = 'document.getElementById("order_tel").setAttribute("value", "{}");'.format(self.client.phone)
+        address = 'document.getElementById("bo").setAttribute("value", "{}");'.format(self.client.credit.address)
+        zipCode = 'document.getElementById("order_billing_zip").setAttribute("value", "{}");'.format(self.client.credit.zipCode)
+        city = 'document.getElementById("order_billing_city").setAttribute("value", "{}");'.format(self.client.credit.city)
+        country = 'document.getElementById("order_billing_country").setAttribute("value", "USA");'
+        self.driver.find_element_by_name("order[billing_state]").send_keys(self.client.credit.state)
+        self.driver.execute_script(name + email + phone + address + zipCode + city + country)
+        # client payment 
+        cardNumber = 'document.getElementById("cnb").setAttribute("value", "{}");'.format(self.client.credit.cardNumber)
+        self.driver.execute_script(cardNumber)
+        # i change the input format here because changing the following elements with the java scrip method t(above code) wouldnt
+        # explicitly show the changes on the site. could lead to some user confusion when using bot.
+        self.driver.find_element_by_name("credit_card[year]").send_keys(self.client.credit.year)
+        self.driver.find_element_by_name("credit_card[month]").send_keys(self.client.credit.month)
+        self.driver.find_element_by_name("credit_card[vvv]").send_keys(self.client.credit.cv)
+
+        self.driver.find_elements_by_xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "iCheck-helper", " " ))]')[1].click()
+        # process payment click
+        self.driver.find_element_by_xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "button", " " ))]').click()
+
