@@ -31,7 +31,11 @@ class Purchase:
         chromeOptions = webdriver.ChromeOptions()
         prefs = {"profile.managed_default_content_settings.images":2}
         chromeOptions.add_experimental_option("prefs",prefs)
-        self.driver = webdriver.Chrome('../chromedriver')
+        chromeOptions.add_argument('--headless')
+        chromeOptions.add_argument('--no-sandbox')
+        chromeOptions.add_argument('--disable-dev-shm-usage')
+        self.driver = webdriver.Chrome('/usr/local/bin/chromedriver',chrome_options=chromeOptions)
+#       self.driver = webdriver.Chrome('/usr/local/bin/chromedriver')
         # self.driver.get(url) 
 
     def start(self):
